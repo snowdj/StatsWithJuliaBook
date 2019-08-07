@@ -1,13 +1,13 @@
-using PyPlot, PyCall 
-@pyimport matplotlib.image as mpimg
-@pyimport matplotlib.patches as patch
+using PyPlot, PyCall
+image = pyimport("matplotlib.image")
+patch = pyimport("matplotlib.patches")
 
-img = mpimg.imread("stars.png") 
-bwImg = img[:,:,1]*0.299 +img[:,:,2]*0.587 + img[:,:,3]*0.114
-sizeX,sizeY = size(bwImg)
+img = image.imread("stars.png")
+gImg = img[:,:,1]*0.299 +img[:,:,2]*0.587 + img[:,:,3]*0.114
+rows, cols = size(gImg)
 
-function filter(image,x,y,d)
-    if x<=d || y<=d || x>=sizeX-d || y>=sizeY-d
+function boxBlur(image,x,y,d)
+    if x<=d || y<=d || x>=cols-d || y>=rows-d
         return image[x,y]
     else
         total = 0.0
@@ -19,19 +19,15 @@ function filter(image,x,y,d)
         return total/((2d+1)^2)
     end
 end
-    
-smoothedImage = [filter(bwImg,x,y,10) for x in 1:sizeX, y in 1:sizeY]
-yUnclean, xUnclean = ind2sub(bwImg,findmax(bwImg)[2])
-yClean, xClean = ind2sub(smoothedImage,findmax(smoothedImage)[2])
 
-fig = figure(figsize=(10,5))
-subplot(121)
-axOriginal = fig[:add_subplot](1,2,1)
-axOriginal[:imshow](bwImg,cmap="Greys")
-axOriginal[:add_artist](patch.Circle([xUnclean,yUnclean],20,fc="none",ec="red",lw=3));
+blurImg = [boxBlur(gImg,x,y,3) for x in 1:cols, y in 1:rows]
 
-subplot(122)
-axSmoothed = fig[:add_subplot](1,2,2)
-axSmoothed[:imshow](smoothedImage,cmap="Greys")
-axSmoothed[:add_artist](patch.Circle([xClean,yClean],20,fc="none",ec="red",lw=3));
-savefig("imageProcessing.pdf")
+yOriginal, xOriginal = argmax(gImg).I
+yBoxBlur, xBoxBlur   = argmax(blurImg).I
+
+fig, (axO, axS)= subplots(1,2,figsize=(10,5))
+axO.imshow(gImg,cmap="Greys")
+axO.add_artist(patch.Circle([xOriginal,yOriginal],20,fc="none",ec="red",lw=3))
+
+axS.imshow(blurImg,cmap="Greys")
+axS.add_artist(patch.Circle([xBoxBlur,yBoxBlur],20,fc="none",ec="red",lw=3))

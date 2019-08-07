@@ -5,7 +5,7 @@ N = 10^6
 mu, sigma = 10, 4
 normDist = Normal(mu,sigma)
 
-fValues = Array{Float64}(N)
+fValues = Array{Float64}(undef, N)
 
 for i in 1:N
     data1 = rand(normDist,n1)
@@ -15,7 +15,7 @@ end
 
 xRange = 0:0.1:5
 
-plt[:hist](fValues,400,histtype="step",color="b",
+plt.hist(fValues,400,histtype="step",color="b",
     label="Simulated",normed=true)
 plot(xRange,pdf(FDist(n1-1, n2-1), xRange),"r",label="Analytic")
 xlim(0,5)

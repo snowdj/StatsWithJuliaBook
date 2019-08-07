@@ -1,19 +1,17 @@
-using DataFrames, PyPlot
+using DataFrames, CSV, PyPlot
 
-df = readtable("companyData.csv")
+df = CSV.read("companyData.csv")
 
-types = unique(df[:Type])
-
-for t in types
-	xVals = df[df[:Type] .== t, :Dividend]
-	yVals = df[df[:Type] .== t, :StockPrice]
-	mktCap = df[df[:Type] .== t, :MarketCap]
-	maxYear = maximum(df[df[:Type] .== t, :Year])
+for g in groupby(df, :Type)
+	xVals = g.Dividend
+	yVals = g.StockPrice
+	mktCap = g.MarketCap
+	maxYear = maximum(g.Year)
 
 	scatter(xVals, yVals, mktCap*100, alpha=0.5)
-	plot(xVals,yVals,label = "Company $t")
+	plot(xVals, yVals,label = "Company $(g.Type[1])")
 	legend(loc="upper left")
-	annotate("$maxYear", xy = (last(xVals),last(yVals)))
+	annotate("$maxYear", xy = (last(xVals), last(yVals)))
 end
 xlabel("Dividend (%)")
 ylabel("StockPrice (\$)")

@@ -1,30 +1,30 @@
 using Distributions, PyPlot
 
-min_n, step_n, max_n = 10, 10, 100 
+min_n, step_n, max_n = 10, 10, 100
 sampleSizes = min_n:step_n:max_n
 
-MSE = Array{Float64}(Int(max_n/step_n), 6)
+MSE = Array{Float64}(undef, Int(max_n/step_n), 6)
 
 trueB = 5
 trueDist = Uniform(-2, trueB)
 N = 10^4
 
 MLEest(data) = maximum(data)
-MMest(data) = mean(data) + sqrt(3)*std(data)
+MMest(data)  = mean(data) + sqrt(3)*std(data)
 
 for (index, n) in enumerate(sampleSizes)
-    
-    mleEst = Array{Float64}(N)
-    mmEst = Array{Float64}(N)
+
+    mleEst = Array{Float64}(undef, N)
+    mmEst  = Array{Float64}(undef, N)
     for i in 1:N
-        sample = rand(trueDist,n)
+        sample    = rand(trueDist,n)
         mleEst[i] = MLEest(sample)
-        mmEst[i] = MMest(sample)
+        mmEst[i]  = MMest(sample)
     end
     meanMLE = mean(mleEst)
-    meanMM = mean(mmEst)
-    varMLE = var(mleEst)
-    varMM = var(mmEst)
+    meanMM  = mean(mmEst)
+    varMLE  = var(mleEst)
+    varMM   = var(mmEst)
 
     MSE[index,1] = varMLE + (meanMLE - trueB)^2
     MSE[index,2] = varMM + (meanMM - trueB)^2
@@ -45,7 +45,7 @@ legend(loc="upper right")
 
 subplot(132)
 plot(sampleSizes,MSE[:,3],"xb",label="Variance (MLE)")
-plot(sampleSizes,MSE[:,4],"xr",label="Variance (MM)")   
+plot(sampleSizes,MSE[:,4],"xr",label="Variance (MM)")
 xlabel("n")
 legend(loc="upper right")
 
@@ -53,4 +53,4 @@ subplot(133)
 plot(sampleSizes,MSE[:,5],"xb",label="Bias (MLE)")
 plot(sampleSizes,MSE[:,6],"xr",label="Bias (MM)")
 xlabel("n")
-legend(loc="center right");
+legend(loc="center right")

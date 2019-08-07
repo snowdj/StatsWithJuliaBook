@@ -1,3 +1,6 @@
+using Random
+Random.seed!(1)
+
 function montyHall(switchPolicy)
     prize = rand(1:3)
     choice = rand(1:3)
@@ -16,5 +19,5 @@ function montyHall(switchPolicy)
 end
 
 N = 10^6
-sum([montyHall(true) for _ in 1:N])/N, 
+sum([montyHall(true) for _ in 1:N])/N,
 sum([montyHall(false) for _ in 1:N])/N
