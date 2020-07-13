@@ -1,26 +1,30 @@
-using Flux.Data.MNIST, LIBSVM, PyPlot
+using Flux.Data.MNIST, LIBSVM, Plots
 
-imgs   = MNIST.images()
-labels = MNIST.labels()
+logFilePath = "../data/svmlog.txt"
+nTrain = 10^4
 
-trainData = hcat([vcat(float.(imgs[i])...) for i in 1:1000]...)
-trainLabels = labels[1:1000]
+trainImgs   = MNIST.images()[1:nTrain]
+trainLabels = MNIST.labels()[1:nTrain]
+trainData = hcat([vcat(float.(trainImgs[i])...) for i in 1:nTrain]...)
 
-testData = hcat([vcat(float.(imgs[i])...) for i in 1001:2000]...)
-testLabels = labels[1001:2000]
+testImgs = MNIST.images(:test)
+testLabels = MNIST.labels(:test)
+nTest = length(testImgs)
+testData = hcat([vcat(float.(testImgs[i])...) for i in 1:nTest]...)
 
-model = svmtrain(trainData,trainLabels)
-
-(predicted_labels, decision_values) = svmpredict(model, testData)
-
-accuracy = sum(predicted_labels .== testLabels)/1000
-println("Prediction accuracy (measured on test set of size 1000): ", accuracy)
-
-showImages = float.(imgs[1001:1010])
-matshow(hcat(showImages...), cmap="Greys")
-for i in 1:10
-    ok = predicted_labels[i] == testLabels[i] ? "" : "x"
-    annotate("$(predicted_labels[i])$(ok)", xy=(28i-10,25), xytext=(28i-10, 25),
-    		bbox=Dict("fc"=>"0.8"))
+@info "Training model with verbose output to $logFilePath."
+@time begin
+    sOut = stdout
+    logF = open(logFilePath, "w")
+    redirect_stdout(logF)
+    model = svmtrain(trainData, trainLabels, 
+                    kernel = Kernel.Linear, verbose=true)
+    close(logF)
+    redirect_stdout(sOut)
+    @info "Training complete."
 end
 
+predicted_labels, _ = svmpredict(model, testData)
+
+accuracy = sum(predicted_labels .== testLabels)/nTest
+println("Prediction accuracy (measured on test set of size $nTest): ", accuracy)
